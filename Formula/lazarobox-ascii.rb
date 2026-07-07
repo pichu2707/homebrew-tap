@@ -1,8 +1,8 @@
 class LazaroboxAscii < Formula
-  desc "ASCII tool from Lazaro"
+  desc "Image-to-terminal art converter (ASCII, Braille, blocks) with CLI and TUI"
   homepage "https://github.com/pichu2707/lazaro-ascii"
-  url "https://github.com/pichu2707/lazaro-ascii/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "e68fd3d7c93ff5ed666f136f06cdcfd48093ad9152cb6d3214c212db720df477"
+  url "https://github.com/pichu2707/lazaro-ascii/archive/refs/tags/v0.2.0.tar.gz"
+  sha256 "0bf87ecc580308cd1341954c0576a4ca82c988845c3b9953bfb9ecf32b027efd"
   license "MIT"
 
   depends_on "rust" => :build
@@ -10,7 +10,8 @@ class LazaroboxAscii < Formula
   def install
     system "cargo", "install", *std_cargo_args
   end
-    test do
-    system "#{bin}/lazarobox-ascii", "--help"
+
+  test do
+    assert_match "lazarobox-ascii", shell_output("#{bin}/lazarobox-ascii --version")
   end
 end
