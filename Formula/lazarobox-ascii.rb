@@ -1,4 +1,4 @@
-class LazaroAscii < Formula
+class LazaroboxAscii < Formula
   desc "ASCII tool from Lazaro"
   homepage "https://github.com/pichu2707/lazaro-ascii"
   url "https://github.com/pichu2707/lazaro-ascii/archive/refs/tags/v0.1.0.tar.gz"
