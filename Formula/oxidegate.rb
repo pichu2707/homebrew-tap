@@ -6,9 +6,19 @@ class Oxidegate < Formula
   license "MIT"
   head "https://github.com/pichu2707/OxideGate.git", branch: "main"
 
+  depends_on "pkg-config" => :build
   depends_on "rust" => :build
+  # `reqwest` links against the system TLS stack (openssl-sys). Without these
+  # two, the build dies in openssl-sys's build script — which no `brew audit`
+  # catches, because it only shows up when you actually compile.
+  depends_on "openssl@3"
 
   def install
+    # Point openssl-sys at Homebrew's OpenSSL instead of letting it hunt the
+    # system (or vendor its own copy, which would bloat the build).
+    ENV["OPENSSL_DIR"] = Formula["openssl@3"].opt_prefix
+    ENV["OPENSSL_NO_VENDOR"] = "1"
+
     # Only the two user-facing binaries. `oxidegate-bench` is a development
     # tool for controlled benchmark sweeps — it has no business in anyone's
     # PATH, so it is deliberately not installed.
