@@ -1,8 +1,8 @@
 class Oxidegate < Formula
   desc "Local proxy that measures the real context cost between AI agents and providers"
   homepage "https://github.com/pichu2707/OxideGate"
-  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.3.1.tar.gz"
-  sha256 "0aee04c0d10dba3b50cfcce534e144dc336c48c707688d5c728e9bb25f855488"
+  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.4.0.tar.gz"
+  sha256 "783873830418c25e371f118102c5f7efd2f5e16b83b1a3579936380e56c4f288"
   license "MIT"
   head "https://github.com/pichu2707/OxideGate.git", branch: "main"
 
@@ -87,6 +87,20 @@ class Oxidegate < Formula
       probe = "curl --silent --fail --retry 30 --retry-delay 1 " \
               "--retry-connrefused --retry-max-time 30 --max-time 5"
       assert_match "ok", shell_output("#{probe} http://127.0.0.1:#{port}/health")
+
+      # The bottled binary must report the version this formula claims to
+      # ship. This is the assertion that would have caught the failure this
+      # tap has now hit twice: the formula served 0.2.1 for months while the
+      # code had moved on, and downstream consumers saw a proxy missing
+      # fields that upstream had shipped — with no error anywhere, because a
+      # stale package pin is invisible in a way a missing function is not.
+      #
+      # /version exists precisely so this can be asserted instead of assumed.
+      # It is additive, so a formula pointing at a pre-0.4.0 tag gets a 404
+      # here and fails loudly rather than installing something older than
+      # advertised.
+      assert_match version.to_s,
+                   shell_output("#{probe} http://127.0.0.1:#{port}/version")
 
       # A freshly started proxy has served nothing, so /stats is an empty array.
       # /health deliberately avoids the telemetry locks, so this is a distinct
