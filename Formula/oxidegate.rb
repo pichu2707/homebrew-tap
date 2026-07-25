@@ -16,7 +16,7 @@ class Oxidegate < Formula
   def install
     # Point openssl-sys at Homebrew's OpenSSL instead of letting it hunt the
     # system (or vendor its own copy, which would bloat the build).
-    ENV["OPENSSL_DIR"] = Formula["openssl@3"].opt_prefix
+    ENV["OPENSSL_DIR"] = formula_opt_prefix("openssl@3")
     ENV["OPENSSL_NO_VENDOR"] = "1"
 
     # Only the two user-facing binaries. `oxidegate-bench` is a development
@@ -76,11 +76,11 @@ class Oxidegate < Formula
       # no log, and an empty report the user cannot explain. This formula
       # shipped 0.2.1 (no /health) long after the route existed upstream, and
       # nothing caught it. Now something does.
-      code = shell_output(
-        "curl --silent --output /dev/null --write-out '%{http_code}' " \
-        "--max-time 5 http://127.0.0.1:#{port}/health",
-      )
-      assert_equal "200", code.strip
+      # `--fail` turns a 404 into a non-zero exit, which makes shell_output
+      # raise — so a stale build fails here rather than returning a body we
+      # would then have to parse.
+      health = shell_output("curl --silent --fail --max-time 5 http://127.0.0.1:#{port}/health")
+      assert_match "ok", health
 
       # And that the TUI binary can talk to it headlessly.
       system bin/"oxidegate-monitor", "--once", "--url", "http://127.0.0.1:#{port}/stats"
