@@ -1,8 +1,8 @@
 class OxidegateLens < Formula
   desc "Read-only report over OxideGate: what each MCP server costs on the wire"
   homepage "https://github.com/pichu2707/oxidegate-lens"
-  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.3.0.tar.gz"
-  sha256 "3d732472fcf4b98bbd4bf657307349d040866eda61fb6c23ca2be8d097d733cb"
+  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.4.0.tar.gz"
+  sha256 "1ebee88385380ce20fbda7020eb54003f020b564409396422c740eac2625f973"
   license "MIT"
   head "https://github.com/pichu2707/oxidegate-lens.git", branch: "main"
 
@@ -20,6 +20,7 @@ class OxidegateLens < Formula
     libexec.install "bin", "lib", "opencode", "examples", "package.json", "README.md", "LICENSE"
 
     bin.install_symlink libexec/"bin/oxidegate-savings.mjs" => "oxidegate-savings"
+    bin.install_symlink libexec/"bin/oxidegate-mcp.mjs" => "oxidegate-mcp"
   end
 
   def caveats
@@ -33,6 +34,13 @@ class OxidegateLens < Formula
         OXIDEGATE_PORT=8899 oxidegate-savings
 
         oxidegate-savings   what each MCP server weighs on the wire
+        oxidegate-mcp       pick which MCP servers survive startup, with each
+                            one's measured price next to it
+
+      `oxidegate-mcp` needs no OxideGate and no OpenCode: the configuration
+      belongs to you, not to the harness, so it works the same under OpenCode,
+      pi, or whatever comes next. What it CANNOT do is connect or disconnect a
+      RUNNING session — that needs the harness SDK and lives in the plugin.
 
       To get the MCP valve inside OpenCode, add the installed plugin to your
       opencode.json — it is not picked up automatically:
@@ -79,6 +87,19 @@ class OxidegateLens < Formula
     output = shell_output("#{bin}/oxidegate-savings 2>&1", 1)
     assert_match "oxidegate-lens", output
 
+    # Both binaries must describe themselves with no TTY, which is exactly the
+    # case inside `brew test`. This is the failure mode that shipped in
+    # OxideGate for two releases: a TUI binary that died with "No such device
+    # or address" the moment stdout was not a terminal.
+    assert_match "oxidegate-mcp", shell_output("#{bin}/oxidegate-mcp --help")
+
+    # With a sandboxed HOME there is no mcp-savings snapshot, so the selector
+    # has no inventory. It must EXPLAIN that and exit 1 — never draw an empty
+    # table, which would read as "you have no MCP servers". That distinction is
+    # the whole point of the module behind it.
+    no_inventory = shell_output("#{bin}/oxidegate-mcp 2>&1", 1)
+    assert_match "mcp-savings", no_inventory
+
     # The plugin must actually be on disk. This formula shipped for two
     # releases without it while package.json listed it under `files`, so
     # nothing disagreed loudly enough to notice. Assert it, because the
@@ -89,5 +110,6 @@ class OxidegateLens < Formula
     # The lib modules the valve is built from are imported by relative path at
     # runtime, so a partial install would only fail once someone ran section (d).
     assert_path_exists libexec/"lib/mcp-valve.mjs"
+    assert_path_exists libexec/"lib/mcp-config-editor.mjs"
   end
 end
