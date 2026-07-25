@@ -1,8 +1,8 @@
 class Oxidegate < Formula
   desc "Local proxy that measures the real context cost between AI agents and providers"
   homepage "https://github.com/pichu2707/OxideGate"
-  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.2.1.tar.gz"
-  sha256 "41b99112e30bf81a33dc87fe52fe13b6daabc192d5b004b73a210759d12f267a"
+  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.3.0.tar.gz"
+  sha256 "4ab877749f0c7808b11737ad25be17d0cf19d176e8f625567728149601494042"
   license "MIT"
   head "https://github.com/pichu2707/OxideGate.git", branch: "main"
 
@@ -27,12 +27,25 @@ class Oxidegate < Formula
 
   def caveats
     <<~EOS
-      Point your client at the proxy and it will measure every request:
+      Point your client at the proxy and it will measure every request.
 
-        export ANTHROPIC_BASE_URL=http://127.0.0.1:8080
+      Do NOT leave the proxy on its default port 8080 — Apache, Tomcat and
+      friends usually own it, and a client that ends up talking to someone
+      else's web server is worse off than one with no proxy at all. Pick a
+      free port and use that same one everywhere:
+
+        OXIDEGATE_PORT=8899 oxidegate
+        export ANTHROPIC_BASE_URL=http://127.0.0.1:8899
 
       Live dashboard:  oxidegate-monitor
       One-off snapshot: oxidegate-monitor --once
+
+      From 0.3.0 the proxy serves GET /health, a cheap liveness route that
+      touches neither AppState nor the telemetry locks. Clients that decide
+      whether to route through the proxy probe it first, so against an older
+      build that probe 404s and they fall back to talking to the provider
+      directly — silently, by design. If traffic is not showing up, check
+      `curl http://127.0.0.1:$OXIDEGATE_PORT/health` before anything else.
 
       Telemetry is written to ~/.config/oxidegate/telemetry.jsonl
 
@@ -56,6 +69,18 @@ class Oxidegate < Formula
       # This proves the binary starts, binds the port and serves its own API.
       output = shell_output("curl --silent --max-time 5 http://127.0.0.1:#{port}/stats")
       assert_equal "[]", output.strip
+
+      # /health must answer 200. This is not decoration: clients gate their
+      # decision to route through the proxy on this probe, and a probe that
+      # 404s makes them fall back to the provider directly — with no error,
+      # no log, and an empty report the user cannot explain. This formula
+      # shipped 0.2.1 (no /health) long after the route existed upstream, and
+      # nothing caught it. Now something does.
+      code = shell_output(
+        "curl --silent --output /dev/null --write-out '%{http_code}' " \
+        "--max-time 5 http://127.0.0.1:#{port}/health",
+      )
+      assert_equal "200", code.strip
 
       # And that the TUI binary can talk to it headlessly.
       system bin/"oxidegate-monitor", "--once", "--url", "http://127.0.0.1:#{port}/stats"
