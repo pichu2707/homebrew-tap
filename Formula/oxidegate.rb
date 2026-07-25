@@ -70,25 +70,29 @@ class Oxidegate < Formula
 
     pid = spawn({ "OXIDEGATE_PORT" => port.to_s }, bin/"oxidegate")
     begin
-      # Give the listener time to bind before asserting against it.
-      sleep 3
+      # /health is the readiness gate AND the first assertion — no fixed sleep.
+      # A `sleep N` is a bet that the machine running `brew test` is not slower
+      # than the one N was tuned on; lose it and the failure reads as "the proxy
+      # is broken" instead of "we did not wait". `--retry-connrefused` covers
+      # the bind window, so this returns as soon as the proxy serves rather than
+      # always paying the worst case; `--retry-max-time` keeps it bounded.
+      #
+      # /health earns the job: it is the cheapest route in the binary, touching
+      # neither AppState nor the telemetry locks, so a 200 means "serving", not
+      # merely "port open". And it is not decoration — clients gate their
+      # decision to route through the proxy on this probe, so a build without it
+      # makes them fall back to the provider silently. This formula shipped
+      # 0.2.1 long after /health existed upstream and nothing caught it; `--fail`
+      # turns that 404 into a non-zero exit, so now something does.
+      probe = "curl --silent --fail --retry 30 --retry-delay 1 " \
+              "--retry-connrefused --retry-max-time 30 --max-time 5"
+      assert_match "ok", shell_output("#{probe} http://127.0.0.1:#{port}/health")
 
       # A freshly started proxy has served nothing, so /stats is an empty array.
-      # This proves the binary starts, binds the port and serves its own API.
+      # /health deliberately avoids the telemetry locks, so this is a distinct
+      # claim: the telemetry API itself answers, not just the liveness route.
       output = shell_output("curl --silent --max-time 5 http://127.0.0.1:#{port}/stats")
       assert_equal "[]", output.strip
-
-      # /health must answer 200. This is not decoration: clients gate their
-      # decision to route through the proxy on this probe, and a probe that
-      # 404s makes them fall back to the provider directly — with no error,
-      # no log, and an empty report the user cannot explain. This formula
-      # shipped 0.2.1 (no /health) long after the route existed upstream, and
-      # nothing caught it. Now something does.
-      # `--fail` turns a 404 into a non-zero exit, which makes shell_output
-      # raise — so a stale build fails here rather than returning a body we
-      # would then have to parse.
-      health = shell_output("curl --silent --fail --max-time 5 http://127.0.0.1:#{port}/health")
-      assert_match "ok", health
 
       # And that the TUI binary can talk to it headlessly.
       system bin/"oxidegate-monitor", "--once", "--url", "http://127.0.0.1:#{port}/stats"
