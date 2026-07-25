@@ -1,8 +1,8 @@
 class Oxidegate < Formula
   desc "Local proxy that measures the real context cost between AI agents and providers"
   homepage "https://github.com/pichu2707/OxideGate"
-  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.3.0.tar.gz"
-  sha256 "4ab877749f0c7808b11737ad25be17d0cf19d176e8f625567728149601494042"
+  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.3.1.tar.gz"
+  sha256 "0aee04c0d10dba3b50cfcce534e144dc336c48c707688d5c728e9bb25f855488"
   license "MIT"
   head "https://github.com/pichu2707/OxideGate.git", branch: "main"
 
@@ -58,6 +58,14 @@ class Oxidegate < Formula
   end
 
   test do
+    # Both binaries must describe themselves without a running proxy and
+    # without a TTY. Until 0.3.1 neither could: `oxidegate --help` panicked
+    # with AddrInUse when an instance was already up, and the monitor died
+    # with "No such device or address" whenever stdout was not a terminal —
+    # which is exactly the case inside `brew test`.
+    assert_match "OXIDEGATE_PORT", shell_output("#{bin}/oxidegate --help")
+    assert_match "--once", shell_output("#{bin}/oxidegate-monitor --help")
+
     port = free_port
 
     pid = spawn({ "OXIDEGATE_PORT" => port.to_s }, bin/"oxidegate")
