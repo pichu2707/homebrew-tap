@@ -1,8 +1,8 @@
 class LazaroboxImg < Formula
   desc "Image optimizer and EXIF metadata editor with CLI and TUI"
   homepage "https://github.com/pichu2707/lazarobox-img"
-  url "https://github.com/pichu2707/lazarobox-img/archive/refs/tags/v0.5.0.tar.gz"
-  sha256 "60c06384de2f2d90139650d4a7a60d1dd8416c7f6ac7b405022f280691dc9630"
+  url "https://github.com/pichu2707/lazarobox-img/archive/refs/tags/v0.5.1.tar.gz"
+  sha256 "6ee63b0133fd1a895f9d35c6117a5f13863472e8b6f557893e8df9034e72b523"
   license "MIT"
 
   depends_on "rust" => :build
