@@ -1,8 +1,8 @@
 class Oxidegate < Formula
   desc "Local proxy that measures the real context cost between AI agents and providers"
   homepage "https://github.com/pichu2707/OxideGate"
-  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.7.0.tar.gz"
-  sha256 "e51f0895767b18a5a47f74d585c1fb3d69bd7eefcbd3f9a5262e2bc812e100b7"
+  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.8.0.tar.gz"
+  sha256 "ca17af1d79d119fcad27bdb0407f4662e821df9459ccf2c9dffa87e4185e24e1"
   license "MIT"
   head "https://github.com/pichu2707/OxideGate.git", branch: "main"
 
