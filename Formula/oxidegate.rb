@@ -1,8 +1,8 @@
 class Oxidegate < Formula
   desc "Local proxy that measures the real context cost between AI agents and providers"
   homepage "https://github.com/pichu2707/OxideGate"
-  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.4.0.tar.gz"
-  sha256 "783873830418c25e371f118102c5f7efd2f5e16b83b1a3579936380e56c4f288"
+  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.6.0.tar.gz"
+  sha256 "dc8617ccd6754325e318c06279ea5bbe678369b95bacd630c415f29f27a00ef4"
   license "MIT"
   head "https://github.com/pichu2707/OxideGate.git", branch: "main"
 
@@ -19,9 +19,13 @@ class Oxidegate < Formula
     ENV["OPENSSL_DIR"] = formula_opt_prefix("openssl@3")
     ENV["OPENSSL_NO_VENDOR"] = "1"
 
-    # Only the two user-facing binaries. `oxidegate-bench` is a development
-    # tool for controlled benchmark sweeps — it has no business in anyone's
-    # PATH, so it is deliberately not installed.
+    # Only the two user-facing binaries.
+    #
+    # Since v0.6.0 the benchmark sweep lives in `examples/` and is no longer a
+    # `[[bin]]`, so these two flags no longer exclude anything — `cargo install`
+    # would install exactly this pair without them. They stay as cheap defence
+    # in depth: if a third binary is ever declared upstream, it does not land in
+    # anyone's PATH by accident. The flags are the belt, not the trousers.
     system "cargo", "install", "--bin", "oxidegate", "--bin", "oxidegate-monitor", *std_cargo_args
   end
 
