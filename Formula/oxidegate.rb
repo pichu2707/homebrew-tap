@@ -1,8 +1,8 @@
 class Oxidegate < Formula
   desc "Local proxy that measures the real context cost between AI agents and providers"
   homepage "https://github.com/pichu2707/OxideGate"
-  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.12.0.tar.gz"
-  sha256 "3ef22336655e4a51ffa0b0d7cbc56b5955b9f7c3b8f194fb9f3eec5610393be5"
+  url "https://github.com/pichu2707/OxideGate/archive/refs/tags/v0.13.0.tar.gz"
+  sha256 "f182bdde7b2a76fce6dc701200eeb5ec785016eeed9730c2814c13baf9fde576"
   license "MIT"
   head "https://github.com/pichu2707/OxideGate.git", branch: "main"
 
@@ -52,6 +52,11 @@ class Oxidegate < Formula
       `curl http://127.0.0.1:$OXIDEGATE_PORT/health` before anything else.
 
       Telemetry is written to ~/.config/oxidegate/telemetry.jsonl
+
+      From 0.13.0, OXIDEGATE_STORAGE_DIR moves it elsewhere — useful to
+      exercise the proxy without polluting your real history. If the path
+      cannot be used the proxy REFUSES to start instead of falling back to
+      the default: a contaminated history cannot be undone.
 
       Note: routing a harness that defers its MCP tool schemas (Claude Code does)
       through ANY non-first-party ANTHROPIC_BASE_URL makes it fall back to
