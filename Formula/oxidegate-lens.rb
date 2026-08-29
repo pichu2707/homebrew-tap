@@ -1,15 +1,19 @@
 class OxidegateLens < Formula
   desc "Read-only report over OxideGate: what each MCP server costs on the wire"
   homepage "https://github.com/pichu2707/oxidegate-lens"
-  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.5.0.tar.gz"
-  sha256 "b0785f14e4fe2c2ffaf31412f8e350d6dada690b3e8c6113f16dee0cd28b9338"
+  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.6.0.tar.gz"
+  sha256 "8c24dd1edaaf016b016671792123e76d6e1b8cb131c081ce73e691499fdfd1dc"
   license "MIT"
   head "https://github.com/pichu2707/oxidegate-lens.git", branch: "main"
 
   depends_on "node"
 
   def install
-    # Zero runtime dependencies by design, so there is nothing to `npm install`.
+    # The CLI reports have no runtime dependencies, so there is nothing to
+    # `npm install` for them. The OpenCode PLUGIN is a different story since
+    # 0.6.0 — see the caveats: it needs @opencode-ai/plugin at runtime, and
+    # Homebrew installs no node_modules. It ships here anyway because its
+    # automatic side still works; the three MANUAL valve tools do not.
     # The whole tree goes to libexec because bin/*.mjs imports ../lib/ by
     # relative path — flattening it would break that import.
     #
@@ -27,11 +31,16 @@ class OxidegateLens < Formula
     <<~EOS
       Needs a running OxideGate (brew install pichu2707/tap/oxidegate).
 
-      Do NOT run the proxy on its default port 8080 — Apache, Tomcat and
-      friends usually own it, and this report would then be reading someone
-      else's web server. Pick a free port and export it here too:
+      Do NOT run the PROXY on its default port 8080 — Apache, Tomcat and
+      friends usually own it. Pick a free port for OxideGate itself:
 
-        OXIDEGATE_PORT=8899 oxidegate-savings
+        OXIDEGATE_PORT=8899 oxidegate
+
+      You do not have to repeat it here. Since 0.6.0 the report finds the
+      proxy on its own, and checks that whoever answers really is OxideGate
+      before believing a word of it:
+
+        oxidegate-savings
 
         oxidegate-savings   what each MCP server weighs on the wire
         oxidegate-mcp       pick which MCP servers survive startup, with each
@@ -42,8 +51,21 @@ class OxidegateLens < Formula
       pi, or whatever comes next. What it CANNOT do is connect or disconnect a
       RUNNING session — that needs the harness SDK and lives in the plugin.
 
-      To get the MCP valve inside OpenCode, add the installed plugin to your
-      opencode.json — it is not picked up automatically:
+      To get the MANUAL MCP valve tools inside OpenCode, install from npm.
+      This Homebrew install cannot provide them: the plugin needs
+      @opencode-ai/plugin at runtime and there is no node_modules here, so it
+      starts, warns once, and runs without them.
+
+        npm install oxidegate-lens
+
+        { "plugin": ["./node_modules/oxidegate-lens/opencode/oxidegate-lens.ts"] }
+
+      plugin[] takes a PATH, not a package name: "oxidegate-lens" on its own
+      does not load, and does not complain either.
+
+      Wiring THIS install still works for the automatic side — the startup
+      notice and your saved configuration — but omit the three tools below,
+      because from here they will not exist:
 
         {
           "plugin": ["#{opt_libexec}/opencode/oxidegate-lens.ts"],
