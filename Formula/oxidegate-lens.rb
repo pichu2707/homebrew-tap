@@ -1,8 +1,8 @@
 class OxidegateLens < Formula
   desc "Read-only report over OxideGate: what each MCP server costs on the wire"
   homepage "https://github.com/pichu2707/oxidegate-lens"
-  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.6.0.tar.gz"
-  sha256 "8c24dd1edaaf016b016671792123e76d6e1b8cb131c081ce73e691499fdfd1dc"
+  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.6.1.tar.gz"
+  sha256 "8820301cdad0c4f2dce755a8d8079d46ff049789ca6ee519f8dc77c7aa183ce0"
   license "MIT"
   head "https://github.com/pichu2707/oxidegate-lens.git", branch: "main"
 
@@ -56,16 +56,13 @@ class OxidegateLens < Formula
       @opencode-ai/plugin at runtime and there is no node_modules here, so it
       starts, warns once, and runs without them.
 
-        npm install oxidegate-lens
+      One command, and it writes your config for you:
 
-        { "plugin": ["./node_modules/oxidegate-lens/opencode/oxidegate-lens.ts"] }
+        opencode plugin oxidegate-lens
 
-      plugin[] takes a PATH, not a package name: "oxidegate-lens" on its own
-      does not load, and does not complain either.
-
-      Wiring THIS install still works for the automatic side — the startup
-      notice and your saved configuration — but omit the three tools below,
-      because from here they will not exist:
+      Wiring THIS install instead still works for the automatic side — the
+      startup notice and your saved configuration — but omit the three tools
+      below, because from here they will not exist:
 
         {
           "plugin": ["#{opt_libexec}/opencode/oxidegate-lens.ts"],
