@@ -1,8 +1,8 @@
 class OxidegateLens < Formula
   desc "Read-only report over OxideGate: what each MCP server costs on the wire"
   homepage "https://github.com/pichu2707/oxidegate-lens"
-  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.6.1.tar.gz"
-  sha256 "8820301cdad0c4f2dce755a8d8079d46ff049789ca6ee519f8dc77c7aa183ce0"
+  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.7.1.tar.gz"
+  sha256 "5832c3f91d5812577bb9ef2da10c3327cfe9855b728168e3cc041766a84a2b2b"
   license "MIT"
   head "https://github.com/pichu2707/oxidegate-lens.git", branch: "main"
 
