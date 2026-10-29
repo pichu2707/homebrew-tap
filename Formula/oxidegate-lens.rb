@@ -1,8 +1,8 @@
 class OxidegateLens < Formula
   desc "Read-only report over OxideGate: what each MCP server costs on the wire"
   homepage "https://github.com/pichu2707/oxidegate-lens"
-  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.7.1.tar.gz"
-  sha256 "5832c3f91d5812577bb9ef2da10c3327cfe9855b728168e3cc041766a84a2b2b"
+  url "https://github.com/pichu2707/oxidegate-lens/archive/refs/tags/v0.8.1.tar.gz"
+  sha256 "2cffd21172496c8d8f0a0a1b2c7ba88584cba3a0d18135a214d4b1ea7ef2bb9f"
   license "MIT"
   head "https://github.com/pichu2707/oxidegate-lens.git", branch: "main"
 
@@ -25,6 +25,7 @@ class OxidegateLens < Formula
 
     bin.install_symlink libexec/"bin/oxidegate-savings.mjs" => "oxidegate-savings"
     bin.install_symlink libexec/"bin/oxidegate-mcp.mjs" => "oxidegate-mcp"
+    bin.install_symlink libexec/"bin/oxidegate-sessions.mjs" => "oxidegate-sessions"
   end
 
   def caveats
@@ -45,6 +46,7 @@ class OxidegateLens < Formula
         oxidegate-savings   what each MCP server weighs on the wire
         oxidegate-mcp       pick which MCP servers survive startup, with each
                             one's measured price next to it
+        oxidegate-sessions  what each work SESSION cost, not each request
 
       `oxidegate-mcp` needs no OxideGate and no OpenCode: the configuration
       belongs to you, not to the harness, so it works the same under OpenCode,
@@ -58,11 +60,15 @@ class OxidegateLens < Formula
 
       One command, and it writes your config for you:
 
-        opencode plugin oxidegate-lens
+        opencode plugin add oxidegate-lens   # OpenCode 2.x
+        opencode plugin oxidegate-lens       # OpenCode 1.x
 
       Wiring THIS install instead still works for the automatic side — the
       startup notice and your saved configuration — but omit the three tools
-      below, because from here they will not exist:
+      below, because from here they will not exist. On OpenCode 2.x a plugin
+      path must be a DIRECTORY: use "#{opt_libexec}" instead of the .ts file
+      shown here, which 2.x rejects ("configured plugin path must be a
+      directory"). On 1.x, the .ts path below is right:
 
         {
           "plugin": ["#{opt_libexec}/opencode/oxidegate-lens.ts"],
@@ -111,6 +117,10 @@ class OxidegateLens < Formula
     # OxideGate for two releases: a TUI binary that died with "No such device
     # or address" the moment stdout was not a terminal.
     assert_match "oxidegate-mcp", shell_output("#{bin}/oxidegate-mcp --help")
+
+    # oxidegate-sessions shipped in 0.8.0 with no symlink here: the file was in
+    # libexec but the command did not exist. Assert it so that cannot repeat.
+    assert_match "oxidegate-sessions", shell_output("#{bin}/oxidegate-sessions --help")
 
     # With a sandboxed HOME there is no mcp-savings snapshot, so the selector
     # has no inventory. It must EXPLAIN that and exit 1 — never draw an empty
